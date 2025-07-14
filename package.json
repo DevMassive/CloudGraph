@@ -1,6 +1,6 @@
 {
   "name": "@devmassive/cloud-graph",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A JavaScript library to visualize data as a cloud graph.",
   "main": "dist/cloudGraph.js",
   "types": "dist/cloudGraph.d.ts",
