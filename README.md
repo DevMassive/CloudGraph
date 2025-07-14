@@ -81,7 +81,11 @@ To run the web application locally:
     ```bash
     npm run build
     ```
-4.  Open `index.html` in your web browser.
+4.  Start a local web server (e.g., using Python):
+    ```bash
+    python3 -m http.server
+    ```
+    Then, open your browser and navigate to `http://localhost:8000/` (or the port indicated by the server).
 
 ## Publishing to npm
 
