@@ -1,5 +1,30 @@
 import { drawCloudGraph } from '../dist/cloudGraph.js';
 
+function updateFavicon(canvas: HTMLCanvasElement) {
+    const faviconCanvas = document.createElement('canvas');
+    const faviconCtx = faviconCanvas.getContext('2d');
+    if (!faviconCtx) return;
+
+    const size = 32; // ファビコンのサイズ (例: 32x32px)
+    faviconCanvas.width = size;
+    faviconCanvas.height = size;
+
+    // メインのCanvasの内容をファビコン用Canvasに描画し、縮小
+    faviconCtx.drawImage(canvas, 0, 0, size, size);
+
+    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    if (link) {
+        link.href = faviconCanvas.toDataURL('image/png');
+    } else {
+        // linkタグがない場合は新しく作成
+        const newLink = document.createElement('link');
+        newLink.rel = 'icon';
+        newLink.type = 'image/png';
+        newLink.href = faviconCanvas.toDataURL('image/png');
+        document.head.appendChild(newLink);
+    }
+}
+
 function renderGraph() {
     const canvas = document.getElementById("cloudCanvas");
     const dataInput = document.getElementById("dataInput");
@@ -9,6 +34,7 @@ function renderGraph() {
     }
     const values = dataInput.value.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
     drawCloudGraph(canvas, values);
+    updateFavicon(canvas); // グラフ描画後にファビコンを更新
 }
 
 // 画像保存処理
