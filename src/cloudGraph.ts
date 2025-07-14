@@ -160,7 +160,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[], opti
     const config = {
         width: 240,
         height: 240,
-        backgroundColor: "#B0E0E6",
+        backgroundColor: ["#B0E0E6", "#C5F5FB"],
         cloudColor: "#FFFFFF",
         blurStrong: 4,
         blurWeak: 2,

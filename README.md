@@ -83,7 +83,7 @@ The `drawCloudGraph` function accepts an optional `options` object to customize 
 |-----------------|----------|-------------|------------------------------------------------------|
 | `width`         | `number` | `240`       | The internal rendering width of the graph.           |
 | `height`        | `number` | `240`       | The internal rendering height of the graph.          |
-| `backgroundColor` | `string \| string[]` | `"#B0E0E6"` | The background color(s) of the canvas (hex string or array of hex strings for gradient).     |
+| `backgroundColor` | `string \| string[]` | `["#B0E0E6", "#C5F5FB"]` | The background color(s) of the canvas (hex string or array of hex strings for gradient).     |
 | `cloudColor`    | `string` | `"#FFFFFF"` | The color of the cloud graph (hex string).           |
 | `blurStrong`    | `number` | `4`         | The strength of the strong blur effect.              |
 | `blurWeak`      | `number` | `2`         | The strength of the weak blur effect.                |
