@@ -76,7 +76,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     const stepX = graphWidth / (totalPoints - 1);
 
     // 雲の最大半径と最大ぼかし範囲を考慮した上部パディング
-    const baseMaxCloudElementHeight = 70 + 32; // 元の基準サイズでの値
+    const baseMaxCloudElementHeight = 70 + 8; // 元の基準サイズでの値
     const baseTopPadding = baseMaxCloudElementHeight + 10; // 元の基準サイズでの値
     const baseBottomPadding = 10; // 元の基準サイズでの値
 
@@ -118,7 +118,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     function drawCloudShape(context: CanvasRenderingContext2D) {
         context.fillStyle = "white";
         points.forEach((p) => {
-            for (let i = 0; i < 30; i++) {
+            for (let i = 0; i < 20; i++) {
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
                 const progress = (randomY - p.y) / (baseY - p.y);
@@ -131,15 +131,15 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         });
     }
 
-    const baseBlurStrong = 32; // 元の基準サイズでの値
-    const baseBlurWeak = 8; // 元の基準サイズでの値
+    const baseBlurStrong = 8; // 元の基準サイズでの値
+    const baseBlurWeak = 4; // 元の基準サイズでの値
     blurStrongCtx.filter = `blur(${baseBlurStrong * scaleFactor}px)`;
     drawCloudShape(blurStrongCtx);
 
     blurWeakCtx.filter = `blur(${baseBlurWeak * scaleFactor}px)`;
     drawCloudShape(blurWeakCtx);
 
-    const baseNoiseScale = 0.008; // 元の基準サイズでの値
+    const baseNoiseScale = 0.08; // 元の基準サイズでの値
     const noiseMap = generateNoiseMap(canvas.width, canvas.height, baseNoiseScale / scaleFactor); // 逆比率で調整
     const strongData = blurStrongCtx.getImageData(0, 0, canvas.width, canvas.height).data;
     const weakData = blurWeakCtx.getImageData(0, 0, canvas.width, canvas.height).data;
