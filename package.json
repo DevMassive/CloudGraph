@@ -1,0 +1,17 @@
+{
+  "name": "cloud-graph",
+  "version": "0.1.0",
+  "description": "A JavaScript library to visualize data as a cloud graph.",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloud",
+    "graph",
+    "visualization",
+    "data"
+  ],
+  "author": "Your Name <your.email@example.com>",
+  "license": "MIT"
+}
