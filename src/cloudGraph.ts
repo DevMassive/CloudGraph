@@ -7,12 +7,19 @@ function noiseHash2D(x: number, y: number): number {
 }
 
 function perlinNoise2D(x: number, y: number): number {
-    function lerp(a: number, b: number, t: number): number { return a + t * (b - a); }
-    const intX = Math.floor(x), fracX = x - intX;
-    const intY = Math.floor(y), fracY = y - intY;
-    const v1 = noiseHash2D(intX, intY), v2 = noiseHash2D(intX + 1, intY);
-    const v3 = noiseHash2D(intX, intY + 1), v4 = noiseHash2D(intX + 1, intY + 1);
-    const i1 = lerp(v1, v2, fracX), i2 = lerp(v3, v4, fracX);
+    function lerp(a: number, b: number, t: number): number {
+        return a + t * (b - a);
+    }
+    const intX = Math.floor(x),
+        fracX = x - intX;
+    const intY = Math.floor(y),
+        fracY = y - intY;
+    const v1 = noiseHash2D(intX, intY),
+        v2 = noiseHash2D(intX + 1, intY);
+    const v3 = noiseHash2D(intX, intY + 1),
+        v4 = noiseHash2D(intX + 1, intY + 1);
+    const i1 = lerp(v1, v2, fracX),
+        i2 = lerp(v3, v4, fracX);
     return lerp(i1, i2, fracY);
 }
 
@@ -68,14 +75,17 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
-    const minVal = Math.min(...values), maxVal = Math.max(...values);
+    const minVal = Math.min(...values),
+        maxVal = Math.max(...values);
     const valRange = maxVal - minVal;
     const totalPoints = values.length;
-    const graphWidth = internalCanvas.width, graphHeight = internalCanvas.height, baseY = internalCanvas.height;
+    const graphWidth = internalCanvas.width,
+        graphHeight = internalCanvas.height,
+        baseY = internalCanvas.height;
     const stepX = graphWidth / (totalPoints - 1);
 
     // 描画パラメータを内部解像度に合わせて調整
-    const maxCloudElementHeight = 40 + 18; // 240px基準での値
+    const maxCloudElementHeight = 40 + 4; // 240px基準での値
     const topPadding = maxCloudElementHeight + 5;
     const bottomPadding = 5;
 
@@ -110,7 +120,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
 
     function drawCloudShape(context: CanvasRenderingContext2D) {
         context.fillStyle = "white";
-        points.forEach(p => {
+        points.forEach((p) => {
             for (let i = 0; i < 20; i++) {
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
@@ -123,22 +133,22 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         });
     }
 
-    const blurStrong = 18; // 240px基準での値
-    const blurWeak = 9; // 240px基準での値
+    const blurStrong = 4; // 240px基準での値
+    const blurWeak = 2; // 240px基準での値
     blurStrongCtx.filter = `blur(${blurStrong}px)`;
     drawCloudShape(blurStrongCtx);
 
     blurWeakCtx.filter = `blur(${blurWeak}px)`;
     drawCloudShape(blurWeakCtx);
 
-    const noiseMap = generateNoiseMap(internalSize, internalSize, 0.014); // 240px基準での調整
+    const noiseMap = generateNoiseMap(internalSize, internalSize, 0.08); // 240px基準での調整
     const strongData = blurStrongCtx.getImageData(0, 0, internalSize, internalSize).data;
     const weakData = blurWeakCtx.getImageData(0, 0, internalSize, internalSize).data;
 
-    const finalCloudCanvas = document.createElement('canvas');
+    const finalCloudCanvas = document.createElement("canvas");
     finalCloudCanvas.width = internalSize;
     finalCloudCanvas.height = internalSize;
-    const finalCloudCtx = finalCloudCanvas.getContext('2d');
+    const finalCloudCtx = finalCloudCanvas.getContext("2d");
 
     if (!finalCloudCtx) {
         console.error("Could not get 2D rendering context for finalCloudCanvas.");
