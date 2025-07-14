@@ -29,6 +29,7 @@ function generateNoiseMap(width: number, height: number, scale: number = 0.01): 
 
 /**
  * Draws a cloud graph on the given canvas with the provided data values.
+ * The drawing parameters are scaled based on the canvas's current size.
  * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
  * @param {number[]} values - An array of numerical data points.
  */
@@ -40,9 +41,10 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
-    // Canvasの内部解像度を240pxに固定
-    canvas.width = 240;
-    canvas.height = 240;
+    // Canvasのサイズは呼び出し元で設定されることを想定
+    const currentCanvasSize = canvas.width; // widthとheightは同じと仮定
+    const baseSize = 420; // 元の基準サイズ
+    const scaleFactor = currentCanvasSize / baseSize;
 
     // Canvasの背景にグラデーションを描画
     const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -64,9 +66,13 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     const stepX = graphWidth / (totalPoints - 1);
 
     // 雲の最大半径と最大ぼかし範囲を考慮した上部パディング
-    const maxCloudElementHeight = 40 + 18; // 最大円半径(40) + 最大ぼかし半径(18)
-    const topPadding = maxCloudElementHeight + 5; // さらに少し余裕を持たせる
-    const bottomPadding = 5; // 下部にも少しパディング
+    const baseMaxCloudElementHeight = 70 + 32; // 元の基準サイズでの値
+    const baseTopPadding = baseMaxCloudElementHeight + 10; // 元の基準サイズでの値
+    const baseBottomPadding = 10; // 元の基準サイズでの値
+
+    const maxCloudElementHeight = baseMaxCloudElementHeight * scaleFactor;
+    const topPadding = baseTopPadding * scaleFactor;
+    const bottomPadding = baseBottomPadding * scaleFactor;
 
     // データを描画する有効な高さ
     const effectiveGraphHeight = canvas.height - topPadding - bottomPadding;
@@ -106,7 +112,8 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
                 const progress = (randomY - p.y) / (baseY - p.y);
-                const radius = 6 + progress * 28 + Math.random() * 6; // 調整
+                const baseRadius = 10 + progress * 50 + Math.random() * 10; // 元の基準サイズでの値
+                const radius = baseRadius * scaleFactor;
                 context.beginPath();
                 context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
                 context.fill();
@@ -114,13 +121,16 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         });
     }
 
-    blurStrongCtx.filter = "blur(18px)"; // 調整
+    const baseBlurStrong = 32; // 元の基準サイズでの値
+    const baseBlurWeak = 16; // 元の基準サイズでの値
+    blurStrongCtx.filter = `blur(${baseBlurStrong * scaleFactor}px)`;
     drawCloudShape(blurStrongCtx);
 
-    blurWeakCtx.filter = "blur(9px)"; // 調整
+    blurWeakCtx.filter = `blur(${baseBlurWeak * scaleFactor}px)`;
     drawCloudShape(blurWeakCtx);
 
-    const noiseMap = generateNoiseMap(canvas.width, canvas.height, 0.014); // 調整
+    const baseNoiseScale = 0.008; // 元の基準サイズでの値
+    const noiseMap = generateNoiseMap(canvas.width, canvas.height, baseNoiseScale / scaleFactor); // 逆比率で調整
     const strongData = blurStrongCtx.getImageData(0, 0, canvas.width, canvas.height).data;
     const weakData = blurWeakCtx.getImageData(0, 0, canvas.width, canvas.height).data;
 
