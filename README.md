@@ -85,11 +85,11 @@ To run the web application locally:
     ```bash
     npm run build
     ```
-4.  Start the local development server:
+4.  Start the local development server (with live-reloading):
     ```bash
     npm run dev
     ```
-    Then, open your browser and navigate to `http://localhost:8080/` (default port for `http-server`).
+    This will open a new browser window/tab with the live preview. Any changes to `index.html`, `src/` (JS/TS), `dist/` (JS/TS), or `assets/` will automatically trigger a browser refresh.
 
 ## Publishing to npm
 

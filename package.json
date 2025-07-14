@@ -6,7 +6,7 @@
   "types": "dist/cloudGraph.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch & http-server -c-1",
+    "dev": "concurrently \"tsc --watch\" \"browser-sync start --server --files \"index.html, src/**/*.js, dist/**/*.js, dist/**/*.d.ts, assets/**/*\"\""
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -23,6 +23,8 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "browser-sync": "^3.0.4",
+    "concurrently": "^9.2.0",
     "http-server": "^14.1.1",
     "typescript": "^5.8.3"
   }
