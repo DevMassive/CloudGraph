@@ -1,5 +1,7 @@
 # Cloud Graph
 
+![npm version](https://img.shields.io/npm/v/@devmassive/cloud-graph) ![npm downloads](https://img.shields.io/npm/dm/@devmassive/cloud-graph)
+
 A JavaScript library and web application to visualize numerical data as an artistic cloud graph.
 
 ## Live Demo
