@@ -7,19 +7,12 @@ function noiseHash2D(x: number, y: number): number {
 }
 
 function perlinNoise2D(x: number, y: number): number {
-    function lerp(a: number, b: number, t: number): number {
-        return a + t * (b - a);
-    }
-    const intX = Math.floor(x),
-        fracX = x - intX;
-    const intY = Math.floor(y),
-        fracY = y - intY;
-    const v1 = noiseHash2D(intX, intY),
-        v2 = noiseHash2D(intX + 1, intY);
-    const v3 = noiseHash2D(intX, intY + 1),
-        v4 = noiseHash2D(intX + 1, intY + 1);
-    const i1 = lerp(v1, v2, fracX),
-        i2 = lerp(v3, v4, fracX);
+    function lerp(a: number, b: number, t: number): number { return a + t * (b - a); }
+    const intX = Math.floor(x), fracX = x - intX;
+    const intY = Math.floor(y), fracY = y - intY;
+    const v1 = noiseHash2D(intX, intY), v2 = noiseHash2D(intX + 1, intY);
+    const v3 = noiseHash2D(intX, intY + 1), v4 = noiseHash2D(intX + 1, intY + 1);
+    const i1 = lerp(v1, v2, fracX), i2 = lerp(v3, v4, fracX);
     return lerp(i1, i2, fracY);
 }
 
@@ -36,8 +29,8 @@ function generateNoiseMap(width: number, height: number, scale: number = 0.01): 
 
 /**
  * Draws a cloud graph on the given canvas with the provided data values.
- * The drawing parameters are scaled based on the canvas's current size.
- * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
+ * Internally, it renders at a fixed resolution (240px) and then scales to the target canvas size.
+ * @param {HTMLCanvasElement} canvas - The target canvas element to draw on.
  * @param {number[]} values - An array of numerical data points.
  */
 export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): void {
@@ -48,56 +41,56 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
-    // Canvasのサイズは呼び出し元で設定されることを想定
-    const currentCanvasSize = canvas.width; // widthとheightは同じと仮定
-    const baseSize = 420; // 元の基準サイズ
-    const scaleFactor = currentCanvasSize / baseSize;
+    // 内部描画解像度を固定
+    const internalSize = 240;
 
-    // Canvasの背景にグラデーションを描画
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGrad.addColorStop(0, "#B0E0E6"); // bodyの背景色と合わせる
-    bgGrad.addColorStop(1, "#B0E0E6"); // 下部も同じ空の色に
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // 内部描画用のCanvasを作成
+    const internalCanvas = document.createElement("canvas");
+    internalCanvas.width = internalSize;
+    internalCanvas.height = internalSize;
+    const internalCtx = internalCanvas.getContext("2d");
 
-    if (!values || values.length < 2) {
-        // データが不足している場合はCanvasをクリア
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (!internalCtx) {
+        console.error("Could not get 2D rendering context for internalCanvas.");
         return;
     }
 
-    const minVal = Math.min(...values),
-        maxVal = Math.max(...values);
+    // Canvasの背景にグラデーションを描画 (内部Canvasに)
+    const bgGrad = internalCtx.createLinearGradient(0, 0, 0, internalCanvas.height);
+    bgGrad.addColorStop(0, "#B0E0E6");
+    bgGrad.addColorStop(1, "#B0E0E6");
+    internalCtx.fillStyle = bgGrad;
+    internalCtx.fillRect(0, 0, internalCanvas.width, internalCanvas.height);
+
+    if (!values || values.length < 2) {
+        internalCtx.clearRect(0, 0, internalCanvas.width, internalCanvas.height);
+        ctx.drawImage(internalCanvas, 0, 0, canvas.width, canvas.height); // クリアした内容を最終Canvasに描画
+        return;
+    }
+
+    const minVal = Math.min(...values), maxVal = Math.max(...values);
     const valRange = maxVal - minVal;
     const totalPoints = values.length;
-    const graphWidth = canvas.width,
-        graphHeight = canvas.height,
-        baseY = canvas.height;
+    const graphWidth = internalCanvas.width, graphHeight = internalCanvas.height, baseY = internalCanvas.height;
     const stepX = graphWidth / (totalPoints - 1);
 
-    // 雲の最大半径と最大ぼかし範囲を考慮した上部パディング
-    const baseMaxCloudElementHeight = 70 + 8; // 元の基準サイズでの値
-    const baseTopPadding = baseMaxCloudElementHeight + 10; // 元の基準サイズでの値
-    const baseBottomPadding = 10; // 元の基準サイズでの値
+    // 描画パラメータを内部解像度に合わせて調整
+    const maxCloudElementHeight = 40 + 18; // 240px基準での値
+    const topPadding = maxCloudElementHeight + 5;
+    const bottomPadding = 5;
 
-    const maxCloudElementHeight = baseMaxCloudElementHeight * scaleFactor;
-    const topPadding = baseTopPadding * scaleFactor;
-    const bottomPadding = baseBottomPadding * scaleFactor;
-
-    // データを描画する有効な高さ
-    const effectiveGraphHeight = canvas.height - topPadding - bottomPadding;
+    const effectiveGraphHeight = internalCanvas.height - topPadding - bottomPadding;
 
     const points = values.map((v, i) => {
         const x = i * stepX;
         const normalizedY = valRange > 0 ? (v - minVal) / valRange : 0.5;
-        // データを有効な高さにマッピングし、下部パディングを考慮してY座標を計算
         const y = baseY - bottomPadding - normalizedY * effectiveGraphHeight;
         return { x, y };
     });
 
     const blurStrongCanvas = document.createElement("canvas");
-    blurStrongCanvas.width = canvas.width;
-    blurStrongCanvas.height = canvas.height;
+    blurStrongCanvas.width = internalSize;
+    blurStrongCanvas.height = internalSize;
     const blurStrongCtx = blurStrongCanvas.getContext("2d");
 
     if (!blurStrongCtx) {
@@ -106,8 +99,8 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     }
 
     const blurWeakCanvas = document.createElement("canvas");
-    blurWeakCanvas.width = canvas.width;
-    blurWeakCanvas.height = canvas.height;
+    blurWeakCanvas.width = internalSize;
+    blurWeakCanvas.height = internalSize;
     const blurWeakCtx = blurWeakCanvas.getContext("2d");
 
     if (!blurWeakCtx) {
@@ -117,13 +110,12 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
 
     function drawCloudShape(context: CanvasRenderingContext2D) {
         context.fillStyle = "white";
-        points.forEach((p) => {
+        points.forEach(p => {
             for (let i = 0; i < 20; i++) {
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
                 const progress = (randomY - p.y) / (baseY - p.y);
-                const baseRadius = 10 + progress * 50 + Math.random() * 10; // 元の基準サイズでの値
-                const radius = baseRadius * scaleFactor;
+                const radius = 6 + progress * 28 + Math.random() * 6; // 240px基準での調整
                 context.beginPath();
                 context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
                 context.fill();
@@ -131,34 +123,33 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         });
     }
 
-    const baseBlurStrong = 8; // 元の基準サイズでの値
-    const baseBlurWeak = 4; // 元の基準サイズでの値
-    blurStrongCtx.filter = `blur(${baseBlurStrong * scaleFactor}px)`;
+    const blurStrong = 18; // 240px基準での値
+    const blurWeak = 9; // 240px基準での値
+    blurStrongCtx.filter = `blur(${blurStrong}px)`;
     drawCloudShape(blurStrongCtx);
 
-    blurWeakCtx.filter = `blur(${baseBlurWeak * scaleFactor}px)`;
+    blurWeakCtx.filter = `blur(${blurWeak}px)`;
     drawCloudShape(blurWeakCtx);
 
-    const baseNoiseScale = 0.08; // 元の基準サイズでの値
-    const noiseMap = generateNoiseMap(canvas.width, canvas.height, baseNoiseScale / scaleFactor); // 逆比率で調整
-    const strongData = blurStrongCtx.getImageData(0, 0, canvas.width, canvas.height).data;
-    const weakData = blurWeakCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const noiseMap = generateNoiseMap(internalSize, internalSize, 0.014); // 240px基準での調整
+    const strongData = blurStrongCtx.getImageData(0, 0, internalSize, internalSize).data;
+    const weakData = blurWeakCtx.getImageData(0, 0, internalSize, internalSize).data;
 
-    const finalCloudCanvas = document.createElement("canvas");
-    finalCloudCanvas.width = canvas.width;
-    finalCloudCanvas.height = canvas.height;
-    const finalCloudCtx = finalCloudCanvas.getContext("2d");
+    const finalCloudCanvas = document.createElement('canvas');
+    finalCloudCanvas.width = internalSize;
+    finalCloudCanvas.height = internalSize;
+    const finalCloudCtx = finalCloudCanvas.getContext('2d');
 
     if (!finalCloudCtx) {
         console.error("Could not get 2D rendering context for finalCloudCanvas.");
         return;
     }
 
-    const finalCloudData = finalCloudCtx.createImageData(canvas.width, canvas.height);
+    const finalCloudData = finalCloudCtx.createImageData(internalSize, internalSize);
 
-    for (let y = 0; y < canvas.height; y++) {
-        for (let x = 0; x < canvas.width; x++) {
-            const idx = (y * canvas.width + x) * 4;
+    for (let y = 0; y < internalSize; y++) {
+        for (let x = 0; x < internalSize; x++) {
+            const idx = (y * internalSize + x) * 4;
             const noiseVal = noiseMap[y][x];
             const finalAlpha = (1 - noiseVal) * strongData[idx + 3] + noiseVal * weakData[idx + 3];
             finalCloudData.data[idx] = 255;
@@ -168,5 +159,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         }
     }
     finalCloudCtx.putImageData(finalCloudData, 0, 0);
-    ctx.drawImage(finalCloudCanvas, 0, 0);
+
+    // 最終的なCanvasに内部描画結果を拡大・縮小して描画
+    ctx.drawImage(finalCloudCanvas, 0, 0, canvas.width, canvas.height);
 }
