@@ -118,7 +118,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     function drawCloudShape(context: CanvasRenderingContext2D) {
         context.fillStyle = "white";
         points.forEach((p) => {
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 30; i++) {
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
                 const progress = (randomY - p.y) / (baseY - p.y);
