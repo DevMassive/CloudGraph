@@ -6,8 +6,7 @@
   "types": "dist/cloudGraph.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "concurrently \"tsc --watch\" \"browser-sync start --server --files \"index.html, src/**/*.js, dist/**/*.js, dist/**/*.d.ts, assets/**/*\"\""
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "concurrently \"tsc --watch\" \"browser-sync start --server --files \"index.html, src/**/*.js, dist/**/*.js, dist/**/*.d.ts, assets/**/*\"\"",
   },
   "keywords": [
     "cloud",
