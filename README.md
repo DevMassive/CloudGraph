@@ -7,53 +7,61 @@ A JavaScript library and web application to visualize numerical data as an artis
 Check out the live demo hosted on GitHub Pages:
 [https://devmassive.github.io/CloudGraph/](https://devmassive.github.io/CloudGraph/)
 
+This live demo uses `index.html` and `src/main.js` to showcase the library's functionality in a web browser environment.
+
 ## Features
 
 *   Visualizes numerical data as a unique cloud-like graph.
-*   Exports the generated graph as a PNG image.
-*   Designed to be easily integrated into modern JavaScript applications, including React.
+*   Exports the generated graph as a PNG image (available in the web demo).
+*   Designed to be easily integrated into modern JavaScript applications, including React, with TypeScript support.
 
 ## Usage as a Node.js Module (for React, etc.)
 
-This library can be installed and used as a Node.js module in your JavaScript projects (e.g., React, Vue, Angular).
+This library provides a core `drawCloudGraph` function that can be used in your JavaScript/TypeScript projects (e.g., React, Vue, Angular).
 
 ### Installation
 
-Currently, this module is not published to npm. You can use it by cloning the repository or by directly importing the `cloudGraph.js` file in your project.
+Currently, this module is not published to npm. You can use it by cloning the repository and building it, or by directly importing the compiled files.
 
-**Option 1: Clone the repository (for development or direct import)**
+**Option 1: Clone and Build (Recommended for development)**
 
 ```bash
 git clone https://github.com/DevMassive/CloudGraph.git
 cd CloudGraph
+npm install
+npm run build
 ```
 
-Then, you can import `src/cloudGraph.js` directly into your project.
+After building, the compiled JavaScript (`dist/cloudGraph.js`) and TypeScript declaration file (`dist/cloudGraph.d.ts`) will be available in the `dist/` directory.
 
-**Option 2: Install via `npm` or `yarn` (if published to npm/GitHub Packages in the future)**
+**Option 2: Install via `npm` or `yarn` (Once published)**
+
+Once this library is published to npm (or GitHub Packages), you can install it like any other package:
 
 ```bash
-npm install cloud-graph # Not yet available
+npm install cloud-graph
 # or
-yarn add cloud-graph # Not yet available
+yarn add cloud-graph
 ```
 
-### Example in React
+### Example in React (with TypeScript)
 
-Here's how you can use the `drawCloudGraph` function within a React component:
+Here's how you can use the `drawCloudGraph` function within a React component after installing the package:
 
-```jsx
+```tsx
 import React, { useRef, useEffect } from 'react';
-import { drawCloudGraph } from './path/to/CloudGraph/src/cloudGraph'; // Adjust path as needed
+import { drawCloudGraph } from 'cloud-graph'; // Import from the installed package
 
-function CloudGraphComponent({ data }) {
-  const canvasRef = useRef(null);
+interface CloudGraphComponentProps {
+  data: number[];
+}
+
+function CloudGraphComponent({ data }: CloudGraphComponentProps) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
-      // Ensure data is an array of numbers
-      const numericData = data.map(Number).filter(n => !isNaN(n));
-      drawCloudGraph(canvasRef.current, numericData);
+      drawCloudGraph(canvasRef.current, data);
     }
   }, [data]); // Re-draw when data changes
 
@@ -65,7 +73,7 @@ function CloudGraphComponent({ data }) {
 export default CloudGraphComponent;
 ```
 
-**Note:** The `drawCloudGraph` function expects a `HTMLCanvasElement` and an array of numbers. Ensure your `data` prop provides valid numerical data.
+**Note:** The `drawCloudGraph` function expects an `HTMLCanvasElement` and an array of numbers. Ensure your `data` prop provides valid numerical data.
 
 ## Local Development
 
@@ -76,7 +84,26 @@ To run the web application locally:
     git clone https://github.com/DevMassive/CloudGraph.git
     cd CloudGraph
     ```
-2.  Open `index.html` in your web browser.
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+3.  Build the TypeScript files:
+    ```bash
+    npm run build
+    ```
+4.  Open `index.html` in your web browser.
+
+## Publishing to npm
+
+To publish this library to the npm registry:
+
+1.  Make sure you have an npm account and are logged in via `npm login`.
+2.  Update the `version` in `package.json` if necessary.
+3.  Run the publish command:
+    ```bash
+    npm publish
+    ```
 
 ## Contributing
 
