@@ -41,6 +41,13 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
+    // Canvasの背景にグラデーションを描画 (最終Canvasに)
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGrad.addColorStop(0, "#B0E0E6");
+    bgGrad.addColorStop(1, "#B0E0E6");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
     // 内部描画解像度を固定
     const internalSize = 240;
 
@@ -55,16 +62,9 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
-    // Canvasの背景にグラデーションを描画 (内部Canvasに)
-    const bgGrad = internalCtx.createLinearGradient(0, 0, 0, internalCanvas.height);
-    bgGrad.addColorStop(0, "#B0E0E6");
-    bgGrad.addColorStop(1, "#B0E0E6");
-    internalCtx.fillStyle = bgGrad;
-    internalCtx.fillRect(0, 0, internalCanvas.width, internalCanvas.height);
-
     if (!values || values.length < 2) {
         internalCtx.clearRect(0, 0, internalCanvas.width, internalCanvas.height);
-        ctx.drawImage(internalCanvas, 0, 0, canvas.width, canvas.height); // クリアした内容を最終Canvasに描画
+        // 背景は既に描画されているので、クリアした内容を最終Canvasに描画する必要はない
         return;
     }
 

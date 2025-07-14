@@ -56,10 +56,6 @@ if (saveButton) {
         saveCanvas.width = 480; // 保存したいサイズ
         saveCanvas.height = 480; // 保存したいサイズ
 
-        // 背景色で塗りつぶす
-        saveCtx.fillStyle = "#B0E0E6"; // index.htmlのbodyの背景色
-        saveCtx.fillRect(0, 0, saveCanvas.width, saveCanvas.height);
-
         // 現在表示されているCanvasの内容を新しいCanvasに拡大してコピー
         saveCtx.drawImage(canvas, 0, 0, saveCanvas.width, saveCanvas.height);
 
