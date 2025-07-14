@@ -9,10 +9,10 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # この行を追加
+      contents: write
 
     steps:
-      - name: Checkout # リポジトリをチェックアウト
+      - name: Checkout # リポジリをチェックアウト
         uses: actions/checkout@v4
 
       - name: Setup Node.js # Node.jsをセットアップ
@@ -26,10 +26,17 @@ jobs:
       - name: Build project # プロジェクトをビルド
         run: npm run build
 
+      - name: Prepare for deployment # デプロイ用のファイルを準備
+        run: |
+          mkdir _site
+          cp index.html _site/
+          cp -r src _site/
+          cp -r dist _site/
+
       - name: Deploy to GitHub Pages # ビルド結果をgh-pagesブランチにデプロイ
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./ # リポジトリのルートディレクトリを公開
+          publish_dir: _site # デプロイするディレクトリを_siteに指定
           publish_branch: gh-pages # デプロイ先のブランチ
           force_orphan: true # gh-pagesブランチの履歴を上書き（クリーンな状態を保つため）
