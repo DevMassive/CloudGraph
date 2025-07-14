@@ -1,0 +1,33 @@
+name: Deploy to GitHub Pages
+
+on: # masterブランチへのプッシュ時に実行
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout # リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js # Node.jsをセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # 使用するNode.jsのバージョン
+
+      - name: Install dependencies # 依存関係をインストール
+        run: npm install
+
+      - name: Build project # プロジェクトをビルド
+        run: npm run build
+
+      - name: Deploy to GitHub Pages # ビルド結果をgh-pagesブランチにデプロイ
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ # リポジトリのルートディレクトリを公開
+          publish_branch: gh-pages # デプロイ先のブランチ
+          force_orphan: true # gh-pagesブランチの履歴を上書き（クリーンな状態を保つため）
