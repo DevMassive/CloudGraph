@@ -40,7 +40,7 @@ function generateNoiseMap(width: number, height: number, scale: number = 0.01): 
 export interface CloudGraphOptions {
     width?: number;
     height?: number;
-    backgroundColor?: string;
+    backgroundColor?: string | string[];
     cloudColor?: string;
     blurStrong?: number;
     blurWeak?: number;
@@ -169,7 +169,15 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[], opti
     };
 
     // Set background color
-    ctx.fillStyle = config.backgroundColor;
+    if (Array.isArray(config.backgroundColor)) {
+        const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        config.backgroundColor.forEach((color, index) => {
+            bgGrad.addColorStop(index / (config.backgroundColor.length - 1), color);
+        });
+        ctx.fillStyle = bgGrad;
+    } else {
+        ctx.fillStyle = config.backgroundColor;
+    }
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     if (!values || values.length < 2) {

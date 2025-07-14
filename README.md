@@ -39,28 +39,36 @@ yarn add @devmassive/cloud-graph
 
 ### Example in React (with TypeScript)
 
-Here's how you can use the `drawCloudGraph` function within a React component after installing the package:
+Here's how you can use the `drawCloudGraph` function within a React component. This example shows a self-contained component that defines its own data and customization options.
 
 ```tsx
 import React, { useRef, useEffect } from 'react';
-import { drawCloudGraph, CloudGraphOptions } from '@devmassive/cloud-graph'; // Import from the installed package
+import { drawCloudGraph, CloudGraphOptions } from '@devmassive/cloud-graph';
 
-interface CloudGraphComponentProps {
-  data: number[];
-  options?: CloudGraphOptions;
-}
-
-function CloudGraphComponent({ data, options }: CloudGraphComponentProps) {
+// Sample data and options are defined directly within the component
+function CloudGraphComponent() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const sampleData = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+  const customOptions: CloudGraphOptions = {
+    backgroundColor: '#2c3e50',
+    cloudColor: '#ecf0f1',
+    width: 300,
+    height: 300,
+  };
 
   useEffect(() => {
     if (canvasRef.current) {
-      drawCloudGraph(canvasRef.current, data, options);
+      // Pass the data and options to the drawing function
+      drawCloudGraph(canvasRef.current, sampleData, customOptions);
     }
-  }, [data, options]); // Re-draw when data or options change
+    // Empty dependency array ensures this runs once after the initial render
+  }, []);
 
   return (
-    <canvas ref={canvasRef} style={{ width: '100%', height: 'auto' }}></canvas>
+    <div>
+      <h1>Customized Cloud Graph</h1>
+      <canvas ref={canvasRef} style={{ width: '100%', height: 'auto' }}></canvas>
+    </div>
   );
 }
 
@@ -75,7 +83,7 @@ The `drawCloudGraph` function accepts an optional `options` object to customize 
 |-----------------|----------|-------------|------------------------------------------------------|
 | `width`         | `number` | `240`       | The internal rendering width of the graph.           |
 | `height`        | `number` | `240`       | The internal rendering height of the graph.          |
-| `backgroundColor` | `string` | `"#B0E0E6"` | The background color of the canvas (hex string).     |
+| `backgroundColor` | `string \| string[]` | `"#B0E0E6"` | The background color(s) of the canvas (hex string or array of hex strings for gradient).     |
 | `cloudColor`    | `string` | `"#FFFFFF"` | The color of the cloud graph (hex string).           |
 | `blurStrong`    | `number` | `4`         | The strength of the strong blur effect.              |
 | `blurWeak`      | `number` | `2`         | The strength of the weak blur effect.                |
