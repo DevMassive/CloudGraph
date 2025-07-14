@@ -1,6 +1,6 @@
 import { drawCloudGraph } from '../dist/cloudGraph.js';
 
-function updateFavicon(canvas: HTMLCanvasElement) {
+function updateFavicon(canvas) {
     const faviconCanvas = document.createElement('canvas');
     const faviconCtx = faviconCanvas.getContext('2d');
     if (!faviconCtx) return;
@@ -12,7 +12,7 @@ function updateFavicon(canvas: HTMLCanvasElement) {
     // メインのCanvasの内容をファビコン用Canvasに描画し、縮小
     faviconCtx.drawImage(canvas, 0, 0, size, size);
 
-    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    const link = document.querySelector('link[rel="icon"]');
     if (link) {
         link.href = faviconCanvas.toDataURL('image/png');
     } else {
