@@ -35,141 +35,161 @@ function generateNoiseMap(width: number, height: number, scale: number = 0.01): 
 }
 
 /**
+ * Configuration options for drawing the cloud graph.
+ */
+export interface CloudGraphOptions {
+    width?: number;
+    height?: number;
+    backgroundColor?: string;
+    cloudColor?: string;
+    blurStrong?: number;
+    blurWeak?: number;
+    noiseScale?: number;
+}
+
+type Point = { x: number; y: number };
+
+function createInMemoryCanvas(size: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    return [canvas, ctx];
+}
+
+function calculatePoints(values: number[], size: number): Point[] {
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const valRange = maxVal - minVal;
+    const totalPoints = values.length;
+    const stepX = size / (totalPoints - 1);
+
+    const maxCloudElementHeight = 40 + 4;
+    const topPadding = maxCloudElementHeight + 5;
+    const bottomPadding = 5;
+    const effectiveGraphHeight = size - topPadding - bottomPadding;
+
+    return values.map((v, i) => {
+        const x = i * stepX;
+        const normalizedY = valRange > 0 ? (v - minVal) / valRange : 0.5;
+        const y = size - bottomPadding - normalizedY * effectiveGraphHeight;
+        return { x, y };
+    });
+}
+
+function drawBaseCloudShape(context: CanvasRenderingContext2D, points: Point[], color: string, size: number) {
+    context.fillStyle = color;
+    const stepX = size / (points.length - 1);
+    points.forEach((p) => {
+        for (let i = 0; i < 20; i++) {
+            const offsetX = (Math.random() - 0.5) * stepX * 1.5;
+            const randomY = p.y + Math.random() * (size - p.y);
+            const progress = (randomY - p.y) / (size - p.y);
+            const radius = 6 + progress * 28 + Math.random() * 6;
+            context.beginPath();
+            context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
+            context.fill();
+        }
+    });
+}
+
+function createBlurredLayer(points: Point[], size: number, blurValue: number, color: string): ImageData {
+    const [canvas, ctx] = createInMemoryCanvas(size);
+    ctx.filter = `blur(${blurValue}px)`;
+    drawBaseCloudShape(ctx, points, color, size);
+    return ctx.getImageData(0, 0, size, size);
+}
+
+function hexToRgb(hex: string): { r: number; g: number; b: number } | null {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+        ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16),
+          }
+        : null;
+}
+
+function combineLayersWithNoise(
+    strongData: ImageData,
+    weakData: ImageData,
+    size: number,
+    noiseScale: number,
+    color: string
+): HTMLCanvasElement {
+    const [canvas, ctx] = createInMemoryCanvas(size);
+    const finalImageData = ctx.createImageData(size, size);
+    const noiseMap = generateNoiseMap(size, size, noiseScale);
+    const rgbColor = hexToRgb(color);
+
+    if (!rgbColor) {
+        console.error("Invalid cloudColor format. Please use a valid hex color string (e.g., '#FFFFFF').");
+        return canvas;
+    }
+
+    for (let y = 0; y < size; y++) {
+        for (let x = 0; x < size; x++) {
+            const idx = (y * size + x) * 4;
+            const noiseVal = noiseMap[y][x];
+            const finalAlpha = (1 - noiseVal) * strongData.data[idx + 3] + noiseVal * weakData.data[idx + 3];
+            finalImageData.data[idx] = rgbColor.r;
+            finalImageData.data[idx + 1] = rgbColor.g;
+            finalImageData.data[idx + 2] = rgbColor.b;
+            finalImageData.data[idx + 3] = finalAlpha;
+        }
+    }
+    ctx.putImageData(finalImageData, 0, 0);
+    return canvas;
+}
+
+
+/**
  * Draws a cloud graph on the given canvas with the provided data values.
- * Internally, it renders at a fixed resolution (240px) and then scales to the target canvas size.
  * @param {HTMLCanvasElement} canvas - The target canvas element to draw on.
  * @param {number[]} values - An array of numerical data points.
+ * @param {CloudGraphOptions} [options={}] - Optional configuration for the graph.
  */
-export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): void {
+export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[], options: CloudGraphOptions = {}): void {
     const ctx = canvas.getContext("2d");
-
     if (!ctx) {
         console.error("Could not get 2D rendering context for canvas.");
         return;
     }
 
-    // Canvasの背景にグラデーションを描画 (最終Canvasに)
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGrad.addColorStop(0, "#B0E0E6");
-    bgGrad.addColorStop(1, "#B0E0E6");
-    ctx.fillStyle = bgGrad;
+    const config = {
+        width: 240,
+        height: 240,
+        backgroundColor: "#B0E0E6",
+        cloudColor: "white",
+        blurStrong: 4,
+        blurWeak: 2,
+        noiseScale: 0.08,
+        ...options,
+    };
+
+    // Set background color
+    ctx.fillStyle = config.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 内部描画解像度を固定
-    const internalSize = 240;
-
-    // 内部描画用のCanvasを作成
-    const internalCanvas = document.createElement("canvas");
-    internalCanvas.width = internalSize;
-    internalCanvas.height = internalSize;
-    const internalCtx = internalCanvas.getContext("2d");
-
-    if (!internalCtx) {
-        console.error("Could not get 2D rendering context for internalCanvas.");
-        return;
-    }
-
     if (!values || values.length < 2) {
-        internalCtx.clearRect(0, 0, internalCanvas.width, internalCanvas.height);
-        // 背景は既に描画されているので、クリアした内容を最終Canvasに描画する必要はない
         return;
     }
 
-    const minVal = Math.min(...values),
-        maxVal = Math.max(...values);
-    const valRange = maxVal - minVal;
-    const totalPoints = values.length;
-    const graphWidth = internalCanvas.width,
-        graphHeight = internalCanvas.height,
-        baseY = internalCanvas.height;
-    const stepX = graphWidth / (totalPoints - 1);
+    const internalSize = Math.min(config.width, config.height);
 
-    // 描画パラメータを内部解像度に合わせて調整
-    const maxCloudElementHeight = 40 + 4; // 240px基準での値
-    const topPadding = maxCloudElementHeight + 5;
-    const bottomPadding = 5;
+    const points = calculatePoints(values, internalSize);
 
-    const effectiveGraphHeight = internalCanvas.height - topPadding - bottomPadding;
+    const strongBlurLayer = createBlurredLayer(points, internalSize, config.blurStrong, config.cloudColor);
+    const weakBlurLayer = createBlurredLayer(points, internalSize, config.blurWeak, config.cloudColor);
 
-    const points = values.map((v, i) => {
-        const x = i * stepX;
-        const normalizedY = valRange > 0 ? (v - minVal) / valRange : 0.5;
-        const y = baseY - bottomPadding - normalizedY * effectiveGraphHeight;
-        return { x, y };
-    });
+    const finalCloudCanvas = combineLayersWithNoise(
+        strongBlurLayer,
+        weakBlurLayer,
+        internalSize,
+        config.noiseScale,
+        config.cloudColor
+    );
 
-    const blurStrongCanvas = document.createElement("canvas");
-    blurStrongCanvas.width = internalSize;
-    blurStrongCanvas.height = internalSize;
-    const blurStrongCtx = blurStrongCanvas.getContext("2d");
-
-    if (!blurStrongCtx) {
-        console.error("Could not get 2D rendering context for blurStrongCanvas.");
-        return;
-    }
-
-    const blurWeakCanvas = document.createElement("canvas");
-    blurWeakCanvas.width = internalSize;
-    blurWeakCanvas.height = internalSize;
-    const blurWeakCtx = blurWeakCanvas.getContext("2d");
-
-    if (!blurWeakCtx) {
-        console.error("Could not get 2D rendering context for blurWeakCanvas.");
-        return;
-    }
-
-    function drawCloudShape(context: CanvasRenderingContext2D) {
-        context.fillStyle = "white";
-        points.forEach((p) => {
-            for (let i = 0; i < 20; i++) {
-                const offsetX = (Math.random() - 0.5) * stepX * 1.5;
-                const randomY = p.y + Math.random() * (baseY - p.y);
-                const progress = (randomY - p.y) / (baseY - p.y);
-                const radius = 6 + progress * 28 + Math.random() * 6; // 240px基準での調整
-                context.beginPath();
-                context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
-                context.fill();
-            }
-        });
-    }
-
-    const blurStrong = 4; // 240px基準での値
-    const blurWeak = 2; // 240px基準での値
-    blurStrongCtx.filter = `blur(${blurStrong}px)`;
-    drawCloudShape(blurStrongCtx);
-
-    blurWeakCtx.filter = `blur(${blurWeak}px)`;
-    drawCloudShape(blurWeakCtx);
-
-    const noiseMap = generateNoiseMap(internalSize, internalSize, 0.08); // 240px基準での調整
-    const strongData = blurStrongCtx.getImageData(0, 0, internalSize, internalSize).data;
-    const weakData = blurWeakCtx.getImageData(0, 0, internalSize, internalSize).data;
-
-    const finalCloudCanvas = document.createElement("canvas");
-    finalCloudCanvas.width = internalSize;
-    finalCloudCanvas.height = internalSize;
-    const finalCloudCtx = finalCloudCanvas.getContext("2d");
-
-    if (!finalCloudCtx) {
-        console.error("Could not get 2D rendering context for finalCloudCanvas.");
-        return;
-    }
-
-    const finalCloudData = finalCloudCtx.createImageData(internalSize, internalSize);
-
-    for (let y = 0; y < internalSize; y++) {
-        for (let x = 0; x < internalSize; x++) {
-            const idx = (y * internalSize + x) * 4;
-            const noiseVal = noiseMap[y][x];
-            const finalAlpha = (1 - noiseVal) * strongData[idx + 3] + noiseVal * weakData[idx + 3];
-            finalCloudData.data[idx] = 255;
-            finalCloudData.data[idx + 1] = 255;
-            finalCloudData.data[idx + 2] = 255;
-            finalCloudData.data[idx + 3] = finalAlpha;
-        }
-    }
-    finalCloudCtx.putImageData(finalCloudData, 0, 0);
-
-    // 最終的なCanvasに内部描画結果を拡大・縮小して描画
     ctx.drawImage(finalCloudCanvas, 0, 0, canvas.width, canvas.height);
 }

@@ -43,20 +43,21 @@ Here's how you can use the `drawCloudGraph` function within a React component af
 
 ```tsx
 import React, { useRef, useEffect } from 'react';
-import { drawCloudGraph } from '@devmassive/cloud-graph'; // Import from the installed package
+import { drawCloudGraph, CloudGraphOptions } from '@devmassive/cloud-graph'; // Import from the installed package
 
 interface CloudGraphComponentProps {
   data: number[];
+  options?: CloudGraphOptions;
 }
 
-function CloudGraphComponent({ data }: CloudGraphComponentProps) {
+function CloudGraphComponent({ data, options }: CloudGraphComponentProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
     if (canvasRef.current) {
-      drawCloudGraph(canvasRef.current, data);
+      drawCloudGraph(canvasRef.current, data, options);
     }
-  }, [data]); // Re-draw when data changes
+  }, [data, options]); // Re-draw when data or options change
 
   return (
     <canvas ref={canvasRef} style={{ width: '100%', height: 'auto' }}></canvas>
@@ -65,6 +66,20 @@ function CloudGraphComponent({ data }: CloudGraphComponentProps) {
 
 export default CloudGraphComponent;
 ```
+
+### Customization Options
+
+The `drawCloudGraph` function accepts an optional `options` object to customize the appearance of the graph. The available options are defined in the `CloudGraphOptions` interface:
+
+| Option          | Type     | Default     | Description                                          |
+|-----------------|----------|-------------|------------------------------------------------------|
+| `width`         | `number` | `240`       | The internal rendering width of the graph.           |
+| `height`        | `number` | `240`       | The internal rendering height of the graph.          |
+| `backgroundColor` | `string` | `"#B0E0E6"` | The background color of the canvas (hex string).     |
+| `cloudColor`    | `string` | `"white"`   | The color of the cloud graph (hex string).           |
+| `blurStrong`    | `number` | `4`         | The strength of the strong blur effect.              |
+| `blurWeak`      | `number` | `2`         | The strength of the weak blur effect.                |
+| `noiseScale`    | `number` | `0.08`      | The scale of the Perlin noise used for texture.      |
 
 **Note:** The `drawCloudGraph` function expects an `HTMLCanvasElement` and an array of numbers. Ensure your `data` prop provides valid numerical data.
 
