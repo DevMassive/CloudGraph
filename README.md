@@ -81,11 +81,11 @@ To run the web application locally:
     ```bash
     npm run build
     ```
-4.  Start a local web server (e.g., using Python):
+4.  Start the local development server:
     ```bash
-    python3 -m http.server
+    npm run dev
     ```
-    Then, open your browser and navigate to `http://localhost:8000/` (or the port indicated by the server).
+    Then, open your browser and navigate to `http://localhost:8080/` (default port for `http-server`).
 
 ## Publishing to npm
 
