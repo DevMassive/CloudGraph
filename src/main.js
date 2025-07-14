@@ -41,13 +41,23 @@ function renderGraph() {
 const saveButton = document.getElementById('saveButton');
 if (saveButton) {
     saveButton.addEventListener('click', () => {
-        const canvas = document.getElementById('cloudCanvas');
-        if (canvas) {
-            const link = document.createElement('a');
-            link.download = 'cloud-graph.png';
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        }
+        const dataInput = document.getElementById("dataInput");
+        if (!dataInput) return;
+
+        const values = dataInput.value.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+
+        // 保存用の新しいCanvasを作成
+        const saveCanvas = document.createElement('canvas');
+        saveCanvas.width = 480; // 保存したいサイズ
+        saveCanvas.height = 480; // 保存したいサイズ
+
+        // 新しいCanvasにグラフを描画
+        drawCloudGraph(saveCanvas, values);
+
+        const link = document.createElement('a');
+        link.download = 'cloud-graph.png';
+        link.href = saveCanvas.toDataURL('image/png');
+        link.click();
     });
 }
 

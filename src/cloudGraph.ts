@@ -40,9 +40,9 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         return;
     }
 
-    // Canvasの内部解像度を420pxに固定
-    canvas.width = 420;
-    canvas.height = 420;
+    // Canvasの内部解像度を240pxに固定
+    canvas.width = 240;
+    canvas.height = 240;
 
     // Canvasの背景にグラデーションを描画
     const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -64,9 +64,9 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
     const stepX = graphWidth / (totalPoints - 1);
 
     // 雲の最大半径と最大ぼかし範囲を考慮した上部パディング
-    const maxCloudElementHeight = 70 + 32; // 最大円半径(70) + 最大ぼかし半径(32)
-    const topPadding = maxCloudElementHeight + 10; // さらに少し余裕を持たせる
-    const bottomPadding = 10; // 下部にも少しパディング
+    const maxCloudElementHeight = 40 + 18; // 最大円半径(40) + 最大ぼかし半径(18)
+    const topPadding = maxCloudElementHeight + 5; // さらに少し余裕を持たせる
+    const bottomPadding = 5; // 下部にも少しパディング
 
     // データを描画する有効な高さ
     const effectiveGraphHeight = canvas.height - topPadding - bottomPadding;
@@ -106,7 +106,7 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
                 const offsetX = (Math.random() - 0.5) * stepX * 1.5;
                 const randomY = p.y + Math.random() * (baseY - p.y);
                 const progress = (randomY - p.y) / (baseY - p.y);
-                const radius = 10 + progress * 50 + Math.random() * 10;
+                const radius = 6 + progress * 28 + Math.random() * 6; // 調整
                 context.beginPath();
                 context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
                 context.fill();
@@ -114,13 +114,13 @@ export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): voi
         });
     }
 
-    blurStrongCtx.filter = "blur(32px)";
+    blurStrongCtx.filter = "blur(18px)"; // 調整
     drawCloudShape(blurStrongCtx);
 
-    blurWeakCtx.filter = "blur(16px)";
+    blurWeakCtx.filter = "blur(9px)"; // 調整
     drawCloudShape(blurWeakCtx);
 
-    const noiseMap = generateNoiseMap(canvas.width, canvas.height, 0.008);
+    const noiseMap = generateNoiseMap(canvas.width, canvas.height, 0.014); // 調整
     const strongData = blurStrongCtx.getImageData(0, 0, canvas.width, canvas.height).data;
     const weakData = blurWeakCtx.getImageData(0, 0, canvas.width, canvas.height).data;
 
