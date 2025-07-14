@@ -21,20 +21,7 @@ This library provides a core `drawCloudGraph` function that can be used in your 
 
 ### Installation
 
-Currently, this module is not published to npm. You can use it by cloning the repository and building it, or by directly importing the compiled files.
-
-**Option 1: Clone and Build (Recommended for development)**
-
-```bash
-git clone https://github.com/DevMassive/CloudGraph.git
-cd CloudGraph
-npm install
-npm run build
-```
-
-After building, the compiled JavaScript (`dist/cloudGraph.js`) and TypeScript declaration file (`dist/cloudGraph.d.ts`) will be available in the `dist/` directory.
-
-**Option 2: Install via `npm` or `yarn` (Once published)**
+Once this library is published to npm (or GitHub Packages), you can install it like any other package:
 
 Once this library is published to npm (or GitHub Packages), you can install it like any other package:
 
