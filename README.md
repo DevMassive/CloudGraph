@@ -26,9 +26,9 @@ Once this library is published to npm (or GitHub Packages), you can install it l
 Once this library is published to npm (or GitHub Packages), you can install it like any other package:
 
 ```bash
-npm install cloud-graph
+npm install @devmassive/cloud-graph
 # or
-yarn add cloud-graph
+yarn add @devmassive/cloud-graph
 ```
 
 ### Example in React (with TypeScript)
@@ -37,7 +37,7 @@ Here's how you can use the `drawCloudGraph` function within a React component af
 
 ```tsx
 import React, { useRef, useEffect } from 'react';
-import { drawCloudGraph } from 'cloud-graph'; // Import from the installed package
+import { drawCloudGraph } from '@devmassive/cloud-graph'; // Import from the installed package
 
 interface CloudGraphComponentProps {
   data: number[];
