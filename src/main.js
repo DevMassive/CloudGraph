@@ -1,4 +1,4 @@
-import { drawCloudGraph } from './cloudGraph.js';
+import { drawCloudGraph } from '../dist/cloudGraph.js';
 
 function renderGraph() {
     const canvas = document.getElementById("cloudCanvas");

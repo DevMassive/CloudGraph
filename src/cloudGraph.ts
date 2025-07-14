@@ -1,13 +1,13 @@
 /**
  * 2D Perlin Noise functions.
  */
-function noiseHash2D(x, y) {
+function noiseHash2D(x: number, y: number): number {
     const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
     return s - Math.floor(s);
 }
 
-function perlinNoise2D(x, y) {
-    function lerp(a, b, t) { return a + t * (b - a); }
+function perlinNoise2D(x: number, y: number): number {
+    function lerp(a: number, b: number, t: number): number { return a + t * (b - a); }
     const intX = Math.floor(x), fracX = x - intX;
     const intY = Math.floor(y), fracY = y - intY;
     const v1 = noiseHash2D(intX, intY), v2 = noiseHash2D(intX + 1, intY);
@@ -16,8 +16,8 @@ function perlinNoise2D(x, y) {
     return lerp(i1, i2, fracY);
 }
 
-function generateNoiseMap(width, height, scale = 0.01) {
-    const map = [];
+function generateNoiseMap(width: number, height: number, scale: number = 0.01): number[][] {
+    const map: number[][] = [];
     for (let y = 0; y < height; y++) {
         map[y] = [];
         for (let x = 0; x < width; x++) {
@@ -32,8 +32,13 @@ function generateNoiseMap(width, height, scale = 0.01) {
  * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
  * @param {number[]} values - An array of numerical data points.
  */
-export function drawCloudGraph(canvas, values) {
+export function drawCloudGraph(canvas: HTMLCanvasElement, values: number[]): void {
     const ctx = canvas.getContext("2d");
+
+    if (!ctx) {
+        console.error("Could not get 2D rendering context for canvas.");
+        return;
+    }
 
     // Canvasの内部解像度を420pxに固定
     canvas.width = 420;
@@ -79,12 +84,22 @@ export function drawCloudGraph(canvas, values) {
     blurStrongCanvas.height = canvas.height;
     const blurStrongCtx = blurStrongCanvas.getContext("2d");
 
+    if (!blurStrongCtx) {
+        console.error("Could not get 2D rendering context for blurStrongCanvas.");
+        return;
+    }
+
     const blurWeakCanvas = document.createElement("canvas");
     blurWeakCanvas.width = canvas.width;
     blurWeakCanvas.height = canvas.height;
     const blurWeakCtx = blurWeakCanvas.getContext("2d");
 
-    function drawCloudShape(context) {
+    if (!blurWeakCtx) {
+        console.error("Could not get 2D rendering context for blurWeakCanvas.");
+        return;
+    }
+
+    function drawCloudShape(context: CanvasRenderingContext2D) {
         context.fillStyle = "white";
         points.forEach(p => {
             for (let i = 0; i < 20; i++) {
@@ -113,6 +128,12 @@ export function drawCloudGraph(canvas, values) {
     finalCloudCanvas.width = canvas.width;
     finalCloudCanvas.height = canvas.height;
     const finalCloudCtx = finalCloudCanvas.getContext('2d');
+
+    if (!finalCloudCtx) {
+        console.error("Could not get 2D rendering context for finalCloudCanvas.");
+        return;
+    }
+
     const finalCloudData = finalCloudCtx.createImageData(canvas.width, canvas.height);
 
     for (let y = 0; y < canvas.height; y++) {
