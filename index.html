@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Graph</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Lora', serif;
+            background-color: #B0E0E6; /* 少し青みがかった空の色 */
+            color: #4A4A4A; /* 柔らかいダークグレーのテキスト */
+        }
+
+        .disclaimer {
+            position: fixed; /* 固定位置 */
+            top: 10px;
+            right: 10px; /* 右上隅に配置 */
+            font-size: 8px; /* さらに小さく */
+            color: rgba(74, 74, 74, 0.7); /* 少し濃くして視認性向上 */
+            background-color: transparent; /* 背景を透明に */
+            padding: 0; /* パディングを削除 */
+            border-radius: 0; /* 角丸を削除 */
+            z-index: 100;
+        }
+
+        .content-container {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; /* 垂直方向中央寄せ */
+            height: 100%;
+            text-align: center;
+            padding: 20px; /* 全体のパディング */
+            box-sizing: border-box;
+        }
+
+        .top-left-title {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+        }
+
+        .top-left-title h1 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1rem; /* さらに小さく */
+            margin: 0;
+            color: #fff; /* テキスト色に合わせる */
+            text-shadow: none;
+        }
+
+        textarea {
+            width: 80%;
+            max-width: 600px;
+            height: 120px;
+            border: none; /* ボーダーを削除 */
+            border-radius: 3px;
+            padding: 10px;
+            font-family: 'Lora', serif;
+            font-size: 0.9rem;
+            background-color: rgba(255, 255, 255, 0.1); /* 薄く白く */
+            color: #4A4A4A;
+            resize: none;
+            box-shadow: 0 0 0 1px rgba(74, 74, 74, 0.1); /* 非常に薄いアウトライン */
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            transition: background-color 0.3s, box-shadow 0.3s; /* トランジションを追加 */
+        }
+        textarea::placeholder {
+            color: rgba(74, 74, 74, 0.4); /* さらに薄く */
+        }
+        textarea:hover {
+            background-color: rgba(255, 255, 255, 0.2); /* ホバー時に背景をさらに薄く白く */
+            box-shadow: 0 0 0 1px rgba(74, 74, 74, 0.3); /* 非常に薄いアウトライン */
+        }
+        textarea:focus {
+            outline: none;
+            background-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 0 1px rgba(74, 74, 74, 0.3); /* 非常に薄いアウトライン */
+        }
+
+        .save-button {
+            margin-top: 20px;
+            padding: 8px 12px; /* パディングを調整 */
+            border: none;
+            border-radius: 3px;
+            background-color: transparent; /* 背景を透明に */
+            color: #4A4A4A; /* テキスト色に合わせる */
+            font-family: 'Lora', serif;
+            font-size: 0.8rem; /* さらに小さく */
+            font-weight: 400; /* 太さを通常に */
+            cursor: pointer;
+            box-shadow: none; /* シャドウを削除 */
+            transition: color 0.3s, background-color 0.3s; /* トランジションを調整 */
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .save-button:hover {
+            color: #6D4C41; /* ホバーで少し濃い色に */
+            background-color: rgba(0, 0, 0, 0.03); /* ホバーで非常に薄い背景 */
+        }
+
+        .save-button:active {
+            transform: none;
+        }
+
+        .save-button i {
+            font-size: 1rem; /* アイコンのサイズを調整 */
+        }
+
+        #cloudCanvas {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            /* デフォルト（縦長または正方形のウィンドウ）: 横幅いっぱいの正方形 */
+            width: 100vw;
+            height: 100vw;
+            z-index: 1;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* 横長のウィンドウの場合 */
+        @media (orientation: landscape) {
+            #cloudCanvas {
+                bottom: 0;
+                left: 0;
+                transform: none;
+                width: 100vw; /* 横幅を目一杯に */
+                height: 100vh; /* 縦幅を目一杯に */
+            }
+        }
+    /* スマホ対応 */
+        @media (max-width: 768px) {
+            .top-left-title h1 {
+                font-size: 0.9rem;
+            }
+
+            .disclaimer {
+                font-size: 7px;
+            }
+
+            .content-container {
+                padding-top: 30px;
+            }
+
+            textarea {
+                font-size: 0.8rem;
+                height: 100px;
+            }
+
+            .save-button {
+                font-size: 0.7rem;
+                padding: 6px 10px;
+            }
+
+            .save-button i {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="top-left-title">
+        <h1>Cloud Graph</h1>
+    </div>
+    <div class="disclaimer">🔒 This tool runs entirely locally. No data is sent externally.</div>
+    
+    <div class="content-container">
+        <textarea id="dataInput" placeholder="e.g., 55, 64, 71, 84, 94, 104, 117, 123, 126, 128, 126">55, 64, 71, 84, 94, 104, 117, 123, 126, 128, 126</textarea>
+        <button id="saveButton" class="save-button"><i class="fas fa-download"></i> Save</button>
+    </div>
+
+    <canvas id="cloudCanvas"></canvas>
+
+    <script>
+        // 2Dパーリンノイズ関数
+        function noiseHash2D(x, y) {
+            const s = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return s - Math.floor(s);
+        }
+        function perlinNoise2D(x, y) {
+            function lerp(a, b, t) { return a + t * (b - a); }
+            const intX = Math.floor(x), fracX = x - intX;
+            const intY = Math.floor(y), fracY = y - intY;
+            const v1 = noiseHash2D(intX, intY), v2 = noiseHash2D(intX + 1, intY);
+            const v3 = noiseHash2D(intX, intY + 1), v4 = noiseHash2D(intX + 1, intY + 1);
+            const i1 = lerp(v1, v2, fracX), i2 = lerp(v3, v4, fracX);
+            return lerp(i1, i2, fracY);
+        }
+        function generateNoiseMap(width, height, scale = 0.01) {
+            const map = [];
+            for (let y = 0; y < height; y++) {
+                map[y] = [];
+                for (let x = 0; x < width; x++) {
+                    map[y][x] = perlinNoise2D(x * scale, y * scale);
+                }
+            }
+            return map;
+        }
+
+        // グラフ描画処理
+        function drawGraph() {
+            const canvas = document.getElementById("cloudCanvas");
+            const ctx = canvas.getContext("2d");
+
+            // Canvasの内部解像度を420pxに固定
+            canvas.width = 420;
+            canvas.height = 420;
+            
+            // Canvasの背景にグラデーションを描画
+            const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            bgGrad.addColorStop(0, "#B0E0E6"); // bodyの背景色と合わせる
+            bgGrad.addColorStop(1, "#B0E0E6"); // 下部も同じ空の色に
+            ctx.fillStyle = bgGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const input = document.getElementById("dataInput").value;
+            const values = input.split(",").map(v => parseFloat(v.trim())).filter(v => !isNaN(v));
+            if (values.length < 2) return;
+
+            const minVal = Math.min(...values), maxVal = Math.max(...values);
+            const valRange = maxVal - minVal;
+            const totalPoints = values.length;
+            const graphWidth = canvas.width, graphHeight = canvas.height, baseY = canvas.height;
+            const stepX = graphWidth / (totalPoints - 1);
+
+            // 雲の最大半径と最大ぼかし範囲を考慮した上部パディング
+            const maxCloudElementHeight = 70 + 32; // 最大円半径(70) + 最大ぼかし半径(32)
+            const topPadding = maxCloudElementHeight + 10; // さらに少し余裕を持たせる
+            const bottomPadding = 10; // 下部にも少しパディング
+
+            // データを描画する有効な高さ
+            const effectiveGraphHeight = canvas.height - topPadding - bottomPadding;
+
+            const points = values.map((v, i) => {
+                const x = i * stepX;
+                const normalizedY = valRange > 0 ? (v - minVal) / valRange : 0.5;
+                // データを有効な高さにマッピングし、下部パディングを考慮してY座標を計算
+                const y = baseY - bottomPadding - normalizedY * effectiveGraphHeight;
+                return { x, y };
+            });
+
+            const blurStrongCanvas = document.createElement("canvas");
+            blurStrongCanvas.width = canvas.width;
+            blurStrongCanvas.height = canvas.height;
+            const blurStrongCtx = blurStrongCanvas.getContext("2d");
+
+            const blurWeakCanvas = document.createElement("canvas");
+            blurWeakCanvas.width = canvas.width;
+            blurWeakCanvas.height = canvas.height;
+            const blurWeakCtx = blurWeakCanvas.getContext("2d");
+
+            function drawCloudShape(context) {
+                context.fillStyle = "white";
+                points.forEach(p => {
+                    for (let i = 0; i < 20; i++) {
+                        const offsetX = (Math.random() - 0.5) * stepX * 1.5;
+                        const randomY = p.y + Math.random() * (baseY - p.y);
+                        const progress = (randomY - p.y) / (baseY - p.y);
+                        const radius = 10 + progress * 50 + Math.random() * 10;
+                        context.beginPath();
+                        context.arc(p.x + offsetX, randomY, radius, 0, Math.PI * 2);
+                        context.fill();
+                    }
+                });
+            }
+
+            blurStrongCtx.filter = "blur(32px)";
+            drawCloudShape(blurStrongCtx);
+
+            blurWeakCtx.filter = "blur(16px)";
+            drawCloudShape(blurWeakCtx);
+
+            const noiseMap = generateNoiseMap(canvas.width, canvas.height, 0.008);
+            const strongData = blurStrongCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+            const weakData = blurWeakCtx.getImageData(0, 0, canvas.width, canvas.height).data;
+            
+            const finalCloudCanvas = document.createElement('canvas');
+            finalCloudCanvas.width = canvas.width;
+            finalCloudCanvas.height = canvas.height;
+            const finalCloudCtx = finalCloudCanvas.getContext('2d');
+            const finalCloudData = finalCloudCtx.createImageData(canvas.width, canvas.height);
+
+            for (let y = 0; y < canvas.height; y++) {
+                for (let x = 0; x < canvas.width; x++) {
+                    const idx = (y * canvas.width + x) * 4;
+                    const noiseVal = noiseMap[y][x];
+                    const finalAlpha = (1 - noiseVal) * strongData[idx + 3] + noiseVal * weakData[idx + 3];
+                    finalCloudData.data[idx] = 255;
+                    finalCloudData.data[idx + 1] = 255;
+                    finalCloudData.data[idx + 2] = 255;
+                    finalCloudData.data[idx + 3] = finalAlpha;
+                }
+            }
+            finalCloudCtx.putImageData(finalCloudData, 0, 0);
+            ctx.drawImage(finalCloudCanvas, 0, 0);
+        }
+
+        // 画像保存処理
+        const saveButton = document.getElementById('saveButton');
+        saveButton.addEventListener('click', () => {
+            const canvas = document.getElementById('cloudCanvas');
+            const link = document.createElement('a');
+            link.download = 'cloud-graph.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+        // 入力のたびに再描画（デバウンス処理付き）
+        let debounceTimer;
+        const dataInput = document.getElementById('dataInput');
+        dataInput.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(drawGraph, 300);
+        });
+
+        // 初期描画とウィンドウリサイズ時の再描画
+        window.onload = drawGraph;
+        window.onresize = drawGraph;
+    </script>
+</body>
+</html>
