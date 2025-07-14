@@ -16,6 +16,11 @@
   ],
   "author": "DevMassive <massivedeveloper@gmail.com>",
   "license": "MIT",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
   "devDependencies": {
     "typescript": "^5.8.3"
   }
