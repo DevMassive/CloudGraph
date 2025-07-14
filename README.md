@@ -17,6 +17,10 @@ This live demo uses `index.html` and `src/main.js` to showcase the library's fun
 *   Exports the generated graph as a PNG image (available in the web demo).
 *   Designed to be easily integrated into modern JavaScript applications, including React, with TypeScript support.
 
+### Example Graph
+
+![Example Cloud Graph](assets/cloud-graph-example.png)
+
 ## Usage as a Node.js Module (for React, etc.)
 
 This library provides a core `drawCloudGraph` function that can be used in your JavaScript/TypeScript projects (e.g., React, Vue, Angular).
