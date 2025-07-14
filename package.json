@@ -6,7 +6,16 @@
   "types": "dist/cloudGraph.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "concurrently \"tsc --watch\" \"browser-sync start --server --files 'index.html, src/**/*.js, dist/**/*.js, dist/**/*.d.ts, assets/**/*'\""
+    "dev": "concurrently \"tsc --watch\" \"browser-sync start --server --files 'index.html, src/**/*.js, dist/**/*.js, dist/**/*.d.ts, assets/**/*'\"",
+    "test": "jest",
+    "prepublishOnly": "npm test"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "setupFiles": [
+      "jest-canvas-mock"
+    ]
   },
   "keywords": [
     "cloud",
@@ -22,9 +31,14 @@
     "LICENSE"
   ],
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "browser-sync": "^3.0.4",
     "concurrently": "^9.2.0",
     "http-server": "^14.1.1",
+    "jest": "^30.0.4",
+    "jest-canvas-mock": "^2.5.2",
+    "jest-environment-jsdom": "^30.0.4",
+    "ts-jest": "^29.4.0",
     "typescript": "^5.8.3"
   }
 }
